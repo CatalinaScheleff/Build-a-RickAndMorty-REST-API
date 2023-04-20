@@ -17,3 +17,10 @@ class User(db.Model):
             "email": self.email,
             # do not serialize the password, its a security breach
         }
+
+
+
+class Character(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=False, nullable=False)
+    age = db.Column(db.Integer, unique=False, nullable=True)

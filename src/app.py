@@ -45,6 +45,49 @@ def handle_hello():
 
     return jsonify(response_body), 200
 
+@app.route("/personajes", methods=['GET'])
+def get_personajes():
+    return "lista de personajes"
+
+@app.route("/personajes/<int:personaje_id>", methods=['GET'])
+def get_personaje(personaje_id):
+    return "lista de personajes[personaje_id]"
+
+@app.route("locations", methods=['GET'])
+def get_locations():
+    return "lista de locations"
+
+@app.route("locations/<int:location_id>", methods=['GET'])
+def get_location(location_id):
+    return "lista de locations[location_id]"
+
+
+@app.route("/users", methods=['GET'])
+def get_users():
+    return "lista de usuarios"
+
+@app.route("/users/favorites", methods=['GET'])
+def get_favorites():
+    return "lista de favoritos de un usuario"
+
+@app.route("/favorite/locations/<int:location_id>", methods=['POST'])
+def add_location(location_id):
+    return "Agregar favorito [location_id]"
+
+@app.route("/favorite/personajes/<int:personaje_id>", methods=['POST'])
+def add_location(personaje_id):
+    return "Agregar favorito [personaje_id]"
+
+@app.route("/favorite/personajes/<int:personaje_id>", methods=['DELETE'])
+def add_location(personaje_id):
+    return "Eliminar favorito [personaje_id]"
+
+@app.route("/favorite/locations/<int:location_id>", methods=['DELETE'])
+def add_location(location_id):
+    return "Eliminar favorito [location_id]"
+
+    
+
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))

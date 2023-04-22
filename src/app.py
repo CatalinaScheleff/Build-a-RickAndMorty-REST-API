@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Personaje, Location, Personaje_fav, Location_fav
 #from models import Person
 
 app = Flask(__name__)
@@ -36,54 +36,91 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
-
-    return jsonify(response_body), 200
-
+# Get a list of all the characters in the database
 @app.route("/personajes", methods=['GET'])
 def get_personajes():
-    return "lista de personajes"
+    all_characters = Personaje.query.all()
+    # result= []
+    # for character in all_characters:
+    # result.append(character.serialize())
+    result = list(map(lambda character: character.serialize(), all_characters))
+    print(all_characters)
+    return jsonify(result)
 
+# Get a one single character information
 @app.route("/personajes/<int:personaje_id>", methods=['GET'])
 def get_personaje(personaje_id):
-    return "lista de personajes[personaje_id]"
+    one_character = Personaje.query.get(personaje_id)
+    if (one_character is None):
+        return jsonify({"mensaje": "no existe"}),404
+    else:
+        return jsonify(one_character.serialize())
 
-@app.route("locations", methods=['GET'])
+# Get a list of all the locations in the database
+@app.route("/locations", methods=['GET'])
 def get_locations():
-    return "lista de locations"
+    all_locations =  Location.query.all()
+    result = list(map(lambda location: location.serialize(), all_locations))
+    return jsonify(result)
 
-@app.route("locations/<int:location_id>", methods=['GET'])
+# Get one single location information
+@app.route("/locations/<int:location_id>", methods=['GET'])
 def get_location(location_id):
-    return "lista de locations[location_id]"
+    one_location = Location.query.get(location_id)
+    if (one_location is None):
+        return jsonify({"mensaje":"no existe"}),404
+    else:
+        return jsonify(one_location.serialize())
 
-
+# Get a list of all the blog post users
 @app.route("/users", methods=['GET'])
 def get_users():
-    return "lista de usuarios"
+    all_users = User.query.all()
+    result = list(map(lambda user: user.serialize(), all_users))
+    return jsonify(result)
 
-@app.route("/users/favorites", methods=['GET'])
-def get_favorites():
-    return "lista de favoritos de un usuario"
 
+
+# Get all the favorites that belong to the current user
+@app.route("/users/<int:user_id>/favorites", methods=['GET'])
+def get_favorites(user_id):
+    one_user = User.query.get(user_id)
+
+    personajes_fav = Personaje_fav.query.filter_by(user_id=user_id).all()
+    per_fav_serialized = list(map(lambda favorite: favorite.serialize(),personajes_fav))
+    
+    locations_fav = Location_fav.query.filter_by(user_id=user_id).all()
+    loc_fav_serialized = list(map(lambda favorite: favorite.serialize(),locations_fav))
+
+    return jsonify({
+        "user_id" : one_user.id,
+        "character_favorites": per_fav_serialized,
+        "location_favorites": loc_fav_serialized,
+    })
+    
+# Add a new favorite location to the current user with the location id = location_id.
 @app.route("/favorite/locations/<int:location_id>", methods=['POST'])
 def add_location(location_id):
-    return "Agregar favorito [location_id]"
+    body = request.get_json()
+    new_character_fav = Personaje_fav(name=body['name'])
+    db.session.add(new_character_fav)
+    db.session.commit()
+    return jsonify({"mensaje": "personaje agregado"}), 201
 
+# Add new favorite people to the current user with the character id = personaje_id.
 @app.route("/favorite/personajes/<int:personaje_id>", methods=['POST'])
-def add_location(personaje_id):
+def add_personaje(personaje_id):
     return "Agregar favorito [personaje_id]"
 
+# Delete favorite character with the id = personaje_id.
 @app.route("/favorite/personajes/<int:personaje_id>", methods=['DELETE'])
-def add_location(personaje_id):
+def delete_personaje(personaje_id):
     return "Eliminar favorito [personaje_id]"
 
+# Delete favorite location with the id = location_id.
 @app.route("/favorite/locations/<int:location_id>", methods=['DELETE'])
-def add_location(location_id):
+def delete_location(location_id):
     return "Eliminar favorito [location_id]"
 
     

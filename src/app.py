@@ -100,26 +100,52 @@ def get_favorites(user_id):
     })
     
 # Add a new favorite location to the current user with the location id = location_id.
-@app.route("/favorite/locations/<int:location_id>", methods=['POST'])
-def add_location(location_id):
-    body = request.get_json()
-    new_character_fav = Personaje_fav(name=body['name'])
-    db.session.add(new_character_fav)
+@app.route("/users/<int:user_id>/favorites/location/<int:location_id>", methods=['POST'])
+def add_location(user_id, location_id):
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({"mensaje": "Usuario no encontrado"}), 404
+    location = Location.query.get(location_id)
+    if location is None:
+        return jsonify({"mensaje": "Location no encontrado"}), 404
+    
+    existing_favorite = Location_fav.query.filter_by(user_id=user_id, location_id=location_id).first()
+    if existing_favorite is not None:
+        return jsonify({"mensaje": "La ubicación ya está en favoritos"}), 404
+    
+    new_location_fav = Location_fav(location_id=location_id, user_id=user_id)
+    db.session.add(new_location_fav)
     db.session.commit()
-    return jsonify({"mensaje": "personaje agregado"}), 201
+
+    return jsonify(new_location_fav.serialize())
 
 # Add new favorite people to the current user with the character id = personaje_id.
-@app.route("/favorite/personajes/<int:personaje_id>", methods=['POST'])
-def add_personaje(personaje_id):
-    return "Agregar favorito [personaje_id]"
+@app.route("/users/<int:user_id>/favorites/personaje/<int:personaje_id>", methods=['POST'])
+def add_personaje(user_id, personaje_id):
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({"mensaje": "Usuario no encontrado"}), 404
+    personaje = Personaje.query.get(personaje_id)
+    if personaje is None:
+        return jsonify({"mensaje": "Personaje no encontrado"}), 404
+    
+    existing_favorite = Personaje_fav.query.filter_by(user_id=user_id, personaje_id=personaje_id).first()
+    if existing_favorite is not None:
+        return jsonify({"mensaje": "Personaje ya está en favoritos"}), 404
+    
+    new_personaje_fav = Personaje_fav(personaje_id=personaje_id, user_id=user_id)
+    db.session.add(new_personaje_fav)
+    db.session.commit()
+
+    return jsonify(new_personaje_fav.serialize())
 
 # Delete favorite character with the id = personaje_id.
-@app.route("/favorite/personajes/<int:personaje_id>", methods=['DELETE'])
+@app.route("/favorites/personajes/<int:personaje_id>", methods=['DELETE'])
 def delete_personaje(personaje_id):
     return "Eliminar favorito [personaje_id]"
 
 # Delete favorite location with the id = location_id.
-@app.route("/favorite/locations/<int:location_id>", methods=['DELETE'])
+@app.route("/favorites/locations/<int:location_id>", methods=['DELETE'])
 def delete_location(location_id):
     return "Eliminar favorito [location_id]"
 

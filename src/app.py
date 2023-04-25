@@ -140,15 +140,48 @@ def add_personaje(user_id, personaje_id):
     return jsonify(new_personaje_fav.serialize())
 
 # Delete favorite character with the id = personaje_id.
-@app.route("/favorites/personajes/<int:personaje_id>", methods=['DELETE'])
-def delete_personaje(personaje_id):
-    return "Eliminar favorito [personaje_id]"
+@app.route('/users/<int:user_id>/favorites/personaje/<int:personaje_id>', methods=['DELETE'])
+def delete_personaje(user_id,personaje_id):
+
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({"mensaje": "Usuario no encontrado"}), 404
+    
+    personaje = Personaje.query.get(personaje_id)
+    if personaje is None:
+        return jsonify({"mensaje": "Personaje no encontrado"}), 404
+    
+    personaje_fav = Personaje_fav.query.filter_by(user_id=user_id, personaje_id=personaje_id).first()
+    if personaje_fav is None:
+        return jsonify({"mensaje": "Personaje no encontrado en favoritos"}), 404
+    
+    # Delete the favorite character
+    db.session.delete(personaje_fav)
+    db.session.commit()
+    
+    return jsonify({"mensaje": "Personaje eliminado de favoritos"}), 200
 
 # Delete favorite location with the id = location_id.
-@app.route("/favorites/locations/<int:location_id>", methods=['DELETE'])
-def delete_location(location_id):
-    return "Eliminar favorito [location_id]"
+@app.route('/users/<int:user_id>/favorites/location/<int:location_id>', methods=['DELETE'])
+def delete_location(user_id,location_id):
 
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({"mensaje": "Usuario no encontrado"}), 404
+    
+    location = Location.query.get(location_id)
+    if location is None:
+        return jsonify({"mensaje": "Locación no encontrada"}), 404
+    
+    location_fav = Location_fav.query.filter_by(user_id=user_id, location_id=location_id).first()
+    if location_fav is None:
+        return jsonify({"mensaje": "Locación no encontrada en favoritos"}), 404
+    
+    # Delete the favorite character
+    db.session.delete(location_fav)
+    db.session.commit()
+    
+    return jsonify({"mensaje": "Locación eliminada de favoritos"}), 200
     
 
 # this only runs if `$ python src/app.py` is executed
